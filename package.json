@@ -11,7 +11,11 @@
     "debug": "~2.2.0",
     "ejs": "~2.3.3",
     "express": "~4.13.1",
+    "gh-got": "^4.0.0",
+    "got": "^6.3.0",
     "morgan": "~1.6.1",
+    "rdesc-parser": "git+https://github.com/r-hub/rdesc-parser.git",
+    "rhub-node": "git+https://github.com/r-hub/rhub-node.git",
     "serve-favicon": "~2.3.0"
   }
 }

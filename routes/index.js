@@ -3,6 +3,12 @@ var express = require('express');
 var router = express.Router();
 var fs = require('fs');
 
+var got = require('got');
+var ghGot = require('gh-got');
+var rdesc = require('rdesc-parser');
+var deps = require('rhub-node').dependency_types;
+var urls = require('../lib/urls');
+
 // ---------------------------------------------------------------------
 // Home page
 
@@ -51,16 +57,57 @@ router.get(new RegExp(re), function(req, res) {
 // PACKAGES.gz file for these packages.
 
 var re1 = '^/(' + re_user + ')/(' + re_repo +
-    ')/src/contrib/PACKAGES\\.gz$';
+    ')/src/contrib/PACKAGES(?:\\.gz|)$';
 
 router.get(new RegExp(re1), function(req, res) {
   var user = req.params[0];
   var repo = req.params[1];
 
-  // TODO
+  var url = urls.gh_pkg_description(user, repo);
 
-  res.send(user + '/' + repo + '/PACKAGES.gz')
-    .end();
+  var stream = got.stream(url);
+  var httperr = false;
+
+  stream.on('error', function(error, body, response) {
+    httperr = error;
+  });
+
+  rdesc(stream, function(err, data) {
+    if (httperr || err) {
+      return(error_out(res, 'Cannot parse DESCRIPTION: ' + httperr || err));
+    }
+
+    res.set('Content-Type', 'text/plain');
+
+    var ans =
+	'Package: ' + data.Package + '\n' +
+	'Version: ' + data.Version + '\n';
+
+    for (var i = 0; i < deps.length; i++) {
+      if (!! data[deps[i]]) {
+	ans = ans + deps[i] + ': ' + data[deps[i]].join(', ') + '\n';
+      }
+    }
+
+    ans = ans +
+      'License: ' + data.License + '\n';
+
+    var url2 = urls.gh_pkg_contents(user, repo);
+    ghGot(url2)
+      .then(function(list) {
+	var names = list.body.map(function(x) { return x.name; });
+	if (names.indexOf('src') > -1) {
+	  ans = ans + 'NeedsCompilation: yes\n';
+	} else {
+	  ans = ans + 'NeedsCompilation: no\n';
+	}
+	res.send(ans);
+      })
+      .catch(function(error) {
+	return(error_out(res, 'Cannot reach GitHub'));
+      });
+
+  });
 });
 
 // The other kind of request is the actual package download.
@@ -78,10 +125,28 @@ router.get(new RegExp(re2), function(req, res) {
   var pkg  = req.params[2];
   var ver  = req.params[3];
 
-  // TODO
-
-  res.send(user + '/' + repo + '/' + pkg + '/' + ver)
-    .end();
+  var url = urls.gh_tar_gz(user, repo);
+  got.stream(url).on('response', function(response) {
+    res.set('Content-Type', 'application/x-gzip');
+    res.set('Content-Length', +response.headers['content-length']);
+    this.pipe(res);
+  });
 });
+
+// PACKAGES for binaries, we just return an empty file to
+// avoid warnings
+
+router.get(new RegExp('PACKAGES'), function(req, res) {
+
+  res.set('Content-Type', 'text/plain')
+    .send('');
+
+});
+
+
+function error_out(res, err) {
+  res.status(404)
+    .send('Error\n' + err);
+}
 
 module.exports = router;
