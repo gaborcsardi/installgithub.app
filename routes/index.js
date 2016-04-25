@@ -128,7 +128,9 @@ router.get(new RegExp(re2), function(req, res) {
   var url = urls.gh_tar_gz(user, repo);
   got.stream(url).on('response', function(response) {
     res.set('Content-Type', 'application/x-gzip');
-    res.set('Content-Length', +response.headers['content-length']);
+    if (!!response.headers['content-length']) {
+      res.set('Content-Length', +response.headers['content-length']);
+    }
     this.pipe(res);
   });
 });
