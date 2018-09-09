@@ -21,7 +21,7 @@ router.get('/', function(req, res, next) {
 // source("https://install-github.me/user/repo")
 
 var re_user = '[-_\\.a-zA-Z0-9]+';
-var re_repo = '[-_\\.a-zA-Z0-9]+';
+var re_repo = '[-_\\.a-zA-Z0-9@#]+';
 
 var re = '^/(' + re_user + ')/(' + re_repo + ')$';
 
