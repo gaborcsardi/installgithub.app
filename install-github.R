@@ -311,7 +311,7 @@ package_deps <- function(packages, dependencies = NA,
   remote <- structure(lapply(deps, package2remote, repos = repos, type = type), class = "remotes")
 
   inst_ver <- vapply(deps, local_sha, character(1))
-  cran_ver <- vapply(remote, remote_sha, character(1))
+  cran_ver <- vapply(remote, function(x) remote_sha(x), character(1))
   is_cran_remote <- vapply(remote, inherits, logical(1), "cran_remote")
 
   diff <- compare_versions(inst_ver, cran_ver, is_cran_remote)
@@ -2842,8 +2842,6 @@ safe_build_package <- function(pkgdir, build_opts, dest_path, quiet, use_pkgbuil
 #' Install package dependencies if needed.
 #'
 #' @inheritParams package_deps
-#' @param threads Number of threads to start, passed to
-#'   \code{\link[utils]{install.packages}} as \code{Ncpus}.
 #' @param ... additional arguments passed to \code{\link[utils]{install.packages}}.
 #' @param build If \code{TRUE} build the pacakge before installing.
 #' @param build_opts Options to pass to `R CMD build`.
@@ -2852,7 +2850,6 @@ safe_build_package <- function(pkgdir, build_opts, dest_path, quiet, use_pkgbuil
 #' \dontrun{install_deps(".")}
 
 install_deps <- function(pkgdir = ".", dependencies = NA,
-                         threads = getOption("Ncpus", 1),
                          repos = getOption("repos"),
                          type = getOption("pkgType"),
                          ...,
@@ -2875,7 +2872,6 @@ install_deps <- function(pkgdir = ".", dependencies = NA,
     packages,
     dependencies = dep_deps,
     ...,
-    Ncpus = threads,
     quiet = quiet,
     upgrade = upgrade,
     build = build,
