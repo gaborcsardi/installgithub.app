@@ -1,6 +1,11 @@
 
 function(...) {
 
+  message(
+    "The install-github.me service is deprecated, ",
+    "please stop using it. More:\n",
+    "https://twitter.com/hrbrmstr/status/1236259919617277953")
+
   ## This is the code of the package, put in here by brew
 
   ## This is mostly from https://bioconductor.org/biocLite.R
