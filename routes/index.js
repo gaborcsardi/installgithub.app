@@ -1,13 +1,14 @@
 
-var express = require('express');
+import express from 'express';
 var router = express.Router();
-var fs = require('fs');
+import fs from 'fs';
 
-var got = require('got');
-var ghGot = require('gh-got');
-var rdesc = require('rdesc-parser');
-var deps = require('rhub-node').dependency_types;
-var urls = require('../lib/urls');
+import got from 'got';
+import ghGot from 'gh-got';
+import rdesc from 'rdesc-parser';
+import rhubnode from 'rhub-node';
+const deps = rhubnode.dependency_types;
+import urls from '../lib/urls.js';
 
 // ---------------------------------------------------------------------
 // Home page
@@ -151,4 +152,4 @@ function error_out(res, err) {
     .send('Error\n' + err);
 }
 
-module.exports = router;
+export default router;
