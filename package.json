@@ -17,8 +17,8 @@
     "gh-got": "^4.0.0",
     "got": "^6.3.0",
     "morgan": "~1.6.1",
-    "rdesc-parser": "git+https://github.com/r-hub/rdesc-parser.git",
-    "rhub-node": "git+https://github.com/r-hub/rhub-node.git",
+    "rdesc-parser": "^3.0.2",
+    "rhub-node": "^1.1.0",
     "serve-favicon": "~2.3.0"
   }
 }
