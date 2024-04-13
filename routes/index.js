@@ -1,4 +1,3 @@
-
 import express from 'express';
 var router = express.Router();
 import fs from 'fs';
@@ -13,8 +12,8 @@ import urls from '../lib/urls.js';
 // ---------------------------------------------------------------------
 // Home page
 
-router.get('/', function(req, res, next) {
-    res.render('index', { title: 'Express' });
+router.get('/', function (req, res, next) {
+  res.render('index', { title: 'Express' });
 });
 
 // ---------------------------------------------------------------------
@@ -26,15 +25,15 @@ var re_repo = '[-_\\.a-zA-Z0-9@#]+';
 
 var re = '^/(' + re_user + ')/(' + re_repo + ')$';
 
-router.get(new RegExp(re), function(req, res) {
-    var user = req.params[0];
-    var repo = req.params[1];
-    fs.readFile('./install-github.R', function(err, data) {
-	if (err) throw(err)
-	res .set('Content-Type', 'text/plain')
-	    .send('(' + data + ')' + '("' + user + '/' + repo + '")')
-	    .end();
-    });
+router.get(new RegExp(re), function (req, res) {
+  var user = req.params[0];
+  var repo = req.params[1];
+  fs.readFile('./install-github.R', function (err, data) {
+    if (err) throw (err)
+    res.set('Content-Type', 'text/plain')
+      .send('(' + data + ')' + '("' + user + '/' + repo + '")')
+      .end();
+  });
 });
 
 // ---------------------------------------------------------------------
@@ -58,9 +57,9 @@ router.get(new RegExp(re), function(req, res) {
 // PACKAGES.gz file for these packages.
 
 var re1 = '^/(' + re_user + ')/(' + re_repo +
-    ')/src/contrib/PACKAGES(?:\\.gz|)$';
+  ')/src/contrib/PACKAGES(?:\\.gz|)$';
 
-router.get(new RegExp(re1), function(req, res) {
+router.get(new RegExp(re1), function (req, res) {
   var user = req.params[0];
   var repo = req.params[1];
 
@@ -69,24 +68,32 @@ router.get(new RegExp(re1), function(req, res) {
   var stream = got.stream(url);
   var httperr = false;
 
-  stream.on('error', function(error, body, response) {
+  stream.on('error', function (error, body, response) {
     httperr = error;
   });
 
-  rdesc(stream, function(err, data) {
+  rdesc(stream, function (err, data) {
     if (httperr || err) {
-      return(error_out(res, 'Cannot parse DESCRIPTION: ' + httperr || err));
+      return (error_out(res, 'Cannot parse DESCRIPTION: ' + httperr || err));
     }
 
     res.set('Content-Type', 'text/plain');
 
     var ans =
-	'Package: ' + data.Package + '\n' +
-	'Version: ' + data.Version + '\n';
+      'Package: ' + data.Package + '\n' +
+      'Version: ' + data.Version + '\n';
 
-    for (var i = 0; i < deps.length; i++) {
-      if (!! data[deps[i]]) {
-	ans = ans + deps[i] + ': ' + data[deps[i]].join(', ') + '\n';
+    for (var deptype of deps) {
+      if (data[deptype] !== undefined) {
+        ans = ans + deptype + ': ';
+        ans = ans + data[deptype].map(function (x) {
+          if (x.version) {
+            return x.package + ' (' + x.version + ')';
+          } else {
+            return x.package;
+          }
+        }).join(', ');
+        ans = ans + '\n';
       }
     }
 
@@ -95,17 +102,17 @@ router.get(new RegExp(re1), function(req, res) {
 
     var url2 = urls.gh_pkg_contents(user, repo);
     ghGot(url2)
-      .then(function(list) {
-	var names = list.body.map(function(x) { return x.name; });
-	if (names.indexOf('src') > -1) {
-	  ans = ans + 'NeedsCompilation: yes\n';
-	} else {
-	  ans = ans + 'NeedsCompilation: no\n';
-	}
-	res.send(ans);
+      .then(function (list) {
+        var names = list.body.map(function (x) { return x.name; });
+        if (names.indexOf('src') > -1) {
+          ans = ans + 'NeedsCompilation: yes\n';
+        } else {
+          ans = ans + 'NeedsCompilation: no\n';
+        }
+        res.send(ans);
       })
-      .catch(function(error) {
-	return(error_out(res, 'Cannot reach GitHub'));
+      .catch(function (error) {
+        return (error_out(res, 'Cannot reach GitHub'));
       });
 
   });
@@ -118,16 +125,16 @@ var re_pkg = '[\\.a-zA-Z0-9]+';
 var re_ver = '[0-9]+[-\\.][0-9]+([-\\.][0-9]+)*';
 
 var re2 = '^/(' + re_user + ')/(' + re_repo + ')/src/contrib/(' +
-    re_pkg + ')_(' + re_ver + ')\\.tar\\.gz$';
+  re_pkg + ')_(' + re_ver + ')\\.tar\\.gz$';
 
-router.get(new RegExp(re2), function(req, res) {
+router.get(new RegExp(re2), function (req, res) {
   var user = req.params[0];
   var repo = req.params[1];
-  var pkg  = req.params[2];
-  var ver  = req.params[3];
+  var pkg = req.params[2];
+  var ver = req.params[3];
 
   var url = urls.gh_tar_gz(user, repo);
-  got.stream(url).on('response', function(response) {
+  got.stream(url).on('response', function (response) {
     res.set('Content-Type', 'application/x-gzip');
     if (!!response.headers['content-length']) {
       res.set('Content-Length', +response.headers['content-length']);
@@ -139,13 +146,12 @@ router.get(new RegExp(re2), function(req, res) {
 // PACKAGES for binaries, we just return an empty file to
 // avoid warnings
 
-router.get(new RegExp('PACKAGES'), function(req, res) {
+router.get(new RegExp('PACKAGES'), function (req, res) {
 
   res.set('Content-Type', 'text/plain')
     .send('');
 
 });
-
 
 function error_out(res, err) {
   res.status(404)

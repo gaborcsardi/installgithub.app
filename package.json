@@ -1,13 +1,13 @@
 {
   "name": "installgithub.app",
   "type": "module",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "start": "node ./bin/www.js"
   },
   "engines": {
-    "node": "18.x"
+    "node": "20.x"
   },
   "dependencies": {
     "body-parser": "^1.20.2",
@@ -15,10 +15,10 @@
     "ejs": "^3.1.10",
     "express": "^4.19.2",
     "gh-got": "^10.0.0",
-    "got": "^6.3.0",
+    "got": "^14.2.1",
     "morgan": "^1.10.0",
     "rdesc-parser": "^3.0.2",
-    "rhub-node": "^1.1.0",
+    "rhub-node": "^2.0.0",
     "serve-favicon": "^2.5.0"
   }
 }
