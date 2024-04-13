@@ -1,0 +1,13 @@
+{
+    "healthchecks": {
+        "web": [
+            {
+                "type": "startup",
+                "name": "web check",
+                "description": "Checking if the app responds to the /health/ready endpoint",
+                "path": "/",
+                "attempts": 5
+            }
+        ]
+    }
+}
